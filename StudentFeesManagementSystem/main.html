@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>
+        Student Fee Management System
+    </title>
+
+    <style>
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:Arial,sans-serif;
+        }
+
+        body{
+            background:linear-gradient(135deg,#1e3c72,#2a5298);
+            min-height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            padding:20px;
+        }
+
+        .container{
+            width:100%;
+            max-width:1000px;
+            background:white;
+            padding:30px;
+            border-radius:20px;
+            box-shadow:0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        h1{
+            text-align:center;
+            color:#1e3c72;
+            margin-bottom:25px;
+        }
+
+        .btn-group{
+            display:grid;
+            grid-template-columns:
+            repeat(auto-fit,minmax(180px,1fr));
+
+            gap:15px;
+        }
+
+        button{
+            padding:12px;
+            border:none;
+            border-radius:10px;
+            background:#1e3c72;
+            color:white;
+            font-size:16px;
+            cursor:pointer;
+            transition:0.3s;
+        }
+
+        button:hover{
+            background:#16325c;
+            transform:scale(1.03);
+        }
+
+        .form-group{
+            margin-top:15px;
+        }
+
+        label{
+            display:block;
+            margin-bottom:5px;
+            font-weight:bold;
+        }
+
+        input{
+            width:100%;
+            padding:12px;
+            border:1px solid #ccc;
+            border-radius:8px;
+            font-size:16px;
+        }
+
+        .output{
+            margin-top:30px;
+            background:#f4f4f4;
+            padding:20px;
+            border-radius:10px;
+            min-height:150px;
+            overflow:auto;
+        }
+
+        table{
+            width:100%;
+            border-collapse:collapse;
+            margin-top:20px;
+        }
+
+        table,th,td{
+            border:1px solid #ccc;
+        }
+
+        th{
+            background:#1e3c72;
+            color:white;
+        }
+
+        th,td{
+            padding:12px;
+            text-align:center;
+        }
+
+        hr{
+            margin:10px 0;
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>
+        Student Fee Management System
+    </h1>
+
+    <!-- MENU -->
+
+    <div class="btn-group">
+
+        <button onclick="showForm('add')">
+            Add Student
+        </button>
+
+        <button onclick="showForm('payment')">
+            Update Payment
+        </button>
+
+        <button onclick="showForm('updateFee')">
+            Update Fee
+        </button>
+
+        <button onclick="showForm('search')">
+            Search Student
+        </button>
+
+        <button onclick="showForm('searchName')">
+            Search By Name
+        </button>
+
+        <button onclick="showForm('receipt')">
+            Generate Receipt
+        </button>
+
+        <button onclick="displayStudents()">
+            Display All Students
+        </button>
+
+        <button onclick="filterPaidStudents()">
+            Paid Students
+        </button>
+
+        <button onclick="filterUnpaidStudents()">
+            Unpaid Students
+        </button>
+
+        <button onclick="showStudentCount()">
+            Student Count
+        </button>
+
+        <button onclick="showForm('delete')">
+            Delete Student
+        </button>
+
+    </div>
+
+    <!-- DYNAMIC FORM -->
+
+    <div id="dynamicForm"
+         style="margin-top:30px;">
+
+    </div>
+
+    <!-- OUTPUT -->
+
+    <div class="output" id="output">
+
+        <h3>
+            Output Area
+        </h3>
+
+    </div>
+
+</div>
+
+<script>
+
+const API_URL = "http://localhost:5000";
+
+/*
+SHOW FORM
+*/
+
+function showForm(type)
+{
+    let html = "";
+
+    /*
+    ADD STUDENT
+    */
+
+    if(type === "add")
+    {
+        html = `
+        
+        <div class="form-group">
+
+            <label>
+                Student Name
+            </label>
+
+            <input type="text" id="name">
+
+        </div>
+
+        <div class="form-group">
+
+            <label>
+                Student ID
+            </label>
+
+            <input type="number" id="id">
+
+        </div>
+
+        <div class="form-group">
+
+            <label>
+                Semester Fee
+            </label>
+
+            <input type="number" id="fee">
+
+        </div>
+
+        <button onclick="addStudent()">
+            Submit
+        </button>
+        `;
+    }
+
+    /*
+    UPDATE PAYMENT
+    */
+
+    else if(type === "payment")
+    {
+        html = `
+        
+        <div class="form-group">
+
+            <label>
+                Student ID
+            </label>
+
+            <input type="number" id="id">
+
+        </div>
+
+        <button onclick="updatePayment()">
+            Update Payment
+        </button>
+        `;
+    }
+
+    /*
+    UPDATE FEE
+    */
+
+    else if(type === "updateFee")
+    {
+        html = `
+        
+        <div class="form-group">
+
+            <label>
+                Student ID
+            </label>
+
+            <input type="number" id="id">
+
+        </div>
+
+        <div class="form-group">
+
+            <label>
+                New Fee
+            </label>
+
+            <input type="number" id="fee">
+
+        </div>
+
+        <button onclick="updateFee()">
+            Update Fee
+        </button>
+        `;
+    }
+
+    /*
+    SEARCH BY ID
+    */
+
+    else if(type === "search")
+    {
+        html = `
+        
+        <div class="form-group">
+
+            <label>
+                Student ID
+            </label>
+
+            <input type="number" id="id">
+
+        </div>
+
+        <button onclick="searchStudent()">
+            Search Student
+        </button>
+        `;
+    }
+
+    /*
+    SEARCH BY NAME
+    */
+
+    else if(type === "searchName")
+    {
+        html = `
+        
+        <div class="form-group">
+
+            <label>
+                Student Name
+            </label>
+
+            <input type="text"
+                   id="searchName">
+
+        </div>
+
+        <button onclick="searchByName()">
+            Search
+        </button>
+        `;
+    }
+
+    /*
+    RECEIPT
+    */
+
+    else if(type === "receipt")
+    {
+        html = `
+        
+        <div class="form-group">
+
+            <label>
+                Student ID
+            </label>
+
+            <input type="number" id="id">
+
+        </div>
+
+        <button onclick="generateReceipt()">
+            Generate Receipt
+        </button>
+        `;
+    }
+
+    /*
+    DELETE
+    */
+
+    else if(type === "delete")
+    {
+        html = `
+        
+        <div class="form-group">
+
+            <label>
+                Student ID
+            </label>
+
+            <input type="number" id="id">
+
+        </div>
+
+        <button onclick="deleteStudent()">
+            Delete Student
+        </button>
+        `;
+    }
+
+    document.getElementById(
+        "dynamicForm"
+    ).innerHTML = html;
+}
+
+/*
+ADD STUDENT
+*/
+
+async function addStudent()
+{
+    const name =
+        document.getElementById("name").value;
+
+    const id =
+        document.getElementById("id").value;
+
+    const fee =
+        document.getElementById("fee").value;
+
+    const response =
+        await fetch(`${API_URL}/add`,{
+
+        method:"POST",
+
+        headers:{
+            "Content-Type":"application/json"
+        },
+
+        body:JSON.stringify({
+            name,
+            id,
+            fee
+        })
+    });
+
+    const data = await response.json();
+
+    document.getElementById(
+        "output"
+    ).innerHTML = `
+    
+    <h3>${data.message}</h3>
+    
+    `;
+}
+
+/*
+UPDATE PAYMENT
+*/
+
+async function updatePayment()
+{
+    const id =
+        document.getElementById("id").value;
+
+    const response =
+        await fetch(`${API_URL}/pay/${id}`,{
+
+        method:"PUT"
+    });
+
+    const data = await response.json();
+
+    document.getElementById(
+        "output"
+    ).innerHTML = `
+    
+    <h3>${data.message}</h3>
+    
+    `;
+}
+
+/*
+UPDATE FEE
+*/
+
+async function updateFee()
+{
+    const id =
+        document.getElementById("id").value;
+
+    const fee =
+        document.getElementById("fee").value;
+
+    const response =
+        await fetch(`${API_URL}/updateFee/${id}`,{
+
+        method:"PUT",
+
+        headers:{
+            "Content-Type":"application/json"
+        },
+
+        body:JSON.stringify({
+            fee
+        })
+    });
+
+    const data = await response.json();
+
+    document.getElementById(
+        "output"
+    ).innerHTML = `
+    
+    <h3>${data.message}</h3>
+    
+    `;
+}
+
+/*
+SEARCH STUDENT
+*/
+
+async function searchStudent()
+{
+    const id =
+        document.getElementById("id").value;
+
+    const response =
+        await fetch(`${API_URL}/student/${id}`);
+
+    const data = await response.json();
+
+    if(data.error)
+    {
+        document.getElementById(
+            "output"
+        ).innerHTML = `
+        
+        <h3>${data.error}</h3>
+        
+        `;
+
+        return;
+    }
+
+    document.getElementById(
+        "output"
+    ).innerHTML = `
+    
+    <table>
+
+        <tr>
+            <th>Name</th>
+            <th>ID</th>
+            <th>Fee</th>
+            <th>Status</th>
+        </tr>
+
+        <tr>
+            <td>${data.name}</td>
+            <td>${data.id}</td>
+            <td>${data.fee}</td>
+            <td>
+                ${data.paid ? "Paid" : "Unpaid"}
+            </td>
+        </tr>
+
+    </table>
+    `;
+}
+
+/*
+SEARCH BY NAME
+*/
+
+async function searchByName()
+{
+    const name =
+        document.getElementById("searchName")
+        .value
+        .toLowerCase();
+
+    const response =
+        await fetch(`${API_URL}/students`);
+
+    const students =
+        await response.json();
+
+    const filteredStudents =
+        students.filter(student =>
+
+        student.name
+        .toLowerCase()
+        .includes(name)
+
+    );
+
+    if(filteredStudents.length === 0)
+    {
+        document.getElementById(
+            "output"
+        ).innerHTML = `
+        
+        <h3>No Student Found</h3>
+        
+        `;
+
+        return;
+    }
+
+    displayFilteredStudents(
+        filteredStudents,
+        "Search Result"
+    );
+}
+
+/*
+GENERATE RECEIPT
+*/
+
+async function generateReceipt()
+{
+    const id =
+        document.getElementById("id").value;
+
+    const response =
+        await fetch(`${API_URL}/student/${id}`);
+
+    const data = await response.json();
+
+    document.getElementById(
+        "output"
+    ).innerHTML = `
+    
+    <h2>
+        Fee Receipt
+    </h2>
+
+    <hr>
+
+    <p>
+        <strong>Name:</strong>
+        ${data.name}
+    </p>
+
+    <p>
+        <strong>ID:</strong>
+        ${data.id}
+    </p>
+
+    <p>
+        <strong>Fee:</strong>
+        ${data.fee}
+    </p>
+
+    <p>
+        <strong>Status:</strong>
+
+        ${data.paid ? "Paid" : "Unpaid"}
+    </p>
+
+    <hr>
+    `;
+}
+
+/*
+DISPLAY ALL STUDENTS
+*/
+
+async function displayStudents()
+{
+    const response =
+        await fetch(`${API_URL}/students`);
+
+    const students =
+        await response.json();
+
+    displayFilteredStudents(
+        students,
+        "All Students"
+    );
+}
+
+/*
+PAID STUDENTS
+*/
+
+async function filterPaidStudents()
+{
+    const response =
+        await fetch(`${API_URL}/students`);
+
+    const students =
+        await response.json();
+
+    const paidStudents =
+        students.filter(student =>
+
+        student.paid == 1
+
+    );
+
+    displayFilteredStudents(
+        paidStudents,
+        "Paid Students"
+    );
+}
+
+/*
+UNPAID STUDENTS
+*/
+
+async function filterUnpaidStudents()
+{
+    const response =
+        await fetch(`${API_URL}/students`);
+
+    const students =
+        await response.json();
+
+    const unpaidStudents =
+        students.filter(student =>
+
+        student.paid == 0
+
+    );
+
+    displayFilteredStudents(
+        unpaidStudents,
+        "Unpaid Students"
+    );
+}
+
+/*
+DISPLAY FILTERED TABLE
+*/
+
+function displayFilteredStudents(
+    students,
+    title
+)
+{
+    let html = `
+    
+    <h2>${title}</h2>
+
+    <table>
+
+        <tr>
+            <th>Name</th>
+            <th>ID</th>
+            <th>Fee</th>
+            <th>Status</th>
+        </tr>
+    `;
+
+    students.forEach(student => {
+
+        html += `
+        
+        <tr>
+
+            <td>${student.name}</td>
+
+            <td>${student.id}</td>
+
+            <td>${student.fee}</td>
+
+            <td>
+                ${student.paid
+                ? "Paid"
+                : "Unpaid"}
+            </td>
+
+        </tr>
+        `;
+    });
+
+    html += `</table>`;
+
+    document.getElementById(
+        "output"
+    ).innerHTML = html;
+}
+
+/*
+STUDENT COUNT
+*/
+
+async function showStudentCount()
+{
+    const response =
+        await fetch(`${API_URL}/students`);
+
+    const students =
+        await response.json();
+
+    document.getElementById(
+        "output"
+    ).innerHTML = `
+    
+    <h2>
+        Total Students:
+        ${students.length}
+    </h2>
+    
+    `;
+}
+
+/*
+DELETE STUDENT
+*/
+
+async function deleteStudent()
+{
+    const id =
+        document.getElementById("id").value;
+
+    const response =
+        await fetch(`${API_URL}/delete/${id}`,{
+
+        method:"DELETE"
+    });
+
+    const data = await response.json();
+
+    document.getElementById(
+        "output"
+    ).innerHTML = `
+    
+    <h3>${data.message}</h3>
+    
+    `;
+}
+
+</script>
+
+</body>
+</html>
